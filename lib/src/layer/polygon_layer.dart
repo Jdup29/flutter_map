@@ -6,6 +6,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map/src/layer/label.dart';
 import 'package:flutter_map/src/map/map.dart';
 import 'package:latlong2/latlong.dart' hide Path; // conflict with Path from UI
+import 'package:simplify/simplify.dart';
 
 class PolygonLayerOptions extends LayerOptions {
   final List<Polygon> polygons;
@@ -141,8 +142,18 @@ class PolygonLayer extends StatelessWidget {
   }
 
   void _fillOffsets(final List<Offset> offsets, final List<LatLng> points) {
-    for (var i = 0, len = points.length; i < len; ++i) {
-      var point = points[i];
+    List<CustomPoint> pointsInCustomPoint = [];
+    var simplifiedPoints = [];
+    points.forEach((latlng) {
+      pointsInCustomPoint.add(map.options.crs.latLngToPoint(latlng, map.zoom));
+    });
+    pointsInCustomPoint = simplify(pointsInCustomPoint);
+    pointsInCustomPoint.forEach((point) {
+      simplifiedPoints.add(map.options.crs.pointToLatLng(point, map.zoom));
+    });
+
+    for (var i = 0, len = simplifiedPoints.length; i < len; ++i) {
+      var point = simplifiedPoints[i];
 
       var pos = map.project(point);
       pos = pos.multiplyBy(map.getZoomScale(map.zoom, map.zoom)) -
