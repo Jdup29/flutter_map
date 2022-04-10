@@ -248,23 +248,26 @@ class PolygonPainter extends CustomPainter {
 
     if (null != polygonOpt.holeOffsetsList) {
       canvas.saveLayer(rect, paint);
-      paint.style = PaintingStyle.fill;
-
-      for (var offsets in polygonOpt.holeOffsetsList!) {
-        var path = Path();
-        path.addPolygon(offsets, true);
-        canvas.drawPath(path, paint);
-      }
 
       paint
-        ..color = polygonOpt.color
-        ..blendMode = BlendMode.srcOut;
+        ..style =
+            polygonOpt.isFilled ? PaintingStyle.fill : PaintingStyle.stroke
+        ..color = polygonOpt.color;
 
       var path = Path();
       path.addPolygon(polygonOpt.offsets, true);
       canvas.drawPath(path, paint);
 
       _paintBorder(canvas);
+
+      for (var offsets in polygonOpt.holeOffsetsList!) {
+        var path = Path();
+        path.addPolygon(offsets, true);
+        paint
+          ..style = PaintingStyle.fill
+          ..blendMode = BlendMode.dstOut;
+        canvas.drawPath(path, paint);
+      }
 
       canvas.restore();
     } else {
