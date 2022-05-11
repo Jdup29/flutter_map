@@ -43,6 +43,7 @@ class Polygon {
   final bool disableHolesBorder;
   final bool isDotted;
   final bool isFilled;
+  final double symplifyTolerance;
   late final LatLngBounds boundingBox;
   final String? label;
   final TextStyle labelStyle;
@@ -60,6 +61,7 @@ class Polygon {
     this.label,
     this.labelStyle = const TextStyle(),
     this.labelPlacement = PolygonLabelPlacement.centroid,
+    this.symplifyTolerance = 1.0,
   }) : holeOffsetsList = null == holePointsList || holePointsList.isEmpty
             ? null
             : List.generate(holePointsList.length, (_) => []);
@@ -115,14 +117,15 @@ class PolygonLayer extends StatelessWidget {
             continue;
           }
 
-          _fillOffsets(polygon.offsets, polygon.points);
+          _fillOffsets(
+              polygon.offsets, polygon.points, polygon.symplifyTolerance);
 
           if (null != polygon.holePointsList) {
             for (var i = 0, len = polygon.holePointsList!.length;
                 i < len;
                 ++i) {
-              _fillOffsets(
-                  polygon.holeOffsetsList![i], polygon.holePointsList![i]);
+              _fillOffsets(polygon.holeOffsetsList![i],
+                  polygon.holePointsList![i], polygon.symplifyTolerance);
             }
           }
 
@@ -141,13 +144,14 @@ class PolygonLayer extends StatelessWidget {
     );
   }
 
-  void _fillOffsets(final List<Offset> offsets, final List<LatLng> points) {
+  void _fillOffsets(
+      final List<Offset> offsets, final List<LatLng> points, tolerance) {
     List<CustomPoint> pointsInCustomPoint = [];
     var simplifiedPoints = [];
     points.forEach((latlng) {
       pointsInCustomPoint.add(map.options.crs.latLngToPoint(latlng, map.zoom));
     });
-    pointsInCustomPoint = simplify(pointsInCustomPoint);
+    pointsInCustomPoint = simplify(pointsInCustomPoint, tolerance: tolerance);
     pointsInCustomPoint.forEach((point) {
       simplifiedPoints.add(map.options.crs.pointToLatLng(point, map.zoom));
     });
