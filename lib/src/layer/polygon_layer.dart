@@ -44,7 +44,7 @@ class Polygon {
   final bool isDotted;
   final bool isFilled;
   final double symplifyTolerance;
-  late final LatLngBounds boundingBox;
+  late LatLngBounds boundingBox;
   final String? label;
   final TextStyle labelStyle;
   final PolygonLabelPlacement labelPlacement;
