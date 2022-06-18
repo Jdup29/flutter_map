@@ -251,13 +251,6 @@ class PolygonPainter extends CustomPainter {
 
     if (null != polygonOpt.holeOffsetsList) {
       canvas.saveLayer(rect, paint);
-      paint.style = PaintingStyle.fill;
-
-      for (final offsets in polygonOpt.holeOffsetsList!) {
-        final path = Path();
-        path.addPolygon(offsets, true);
-        canvas.drawPath(path, paint);
-      }
 
       paint
         ..style =
