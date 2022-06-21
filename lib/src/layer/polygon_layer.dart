@@ -8,15 +8,36 @@ import 'package:flutter_map/src/map/map.dart';
 import 'package:latlong2/latlong.dart' hide Path; // conflict with Path from UI
 import 'package:simplify/simplify.dart';
 
+List<LatLng> simplifyPoints(
+    final List<LatLng> points, double tolerance, MapState _map) {
+  if (tolerance > 0) {
+    List<CustomPoint> pointsInCustomPoint = [];
+    List<LatLng> simplifiedPoints = [];
+    points.forEach((latlng) {
+      pointsInCustomPoint
+          .add(_map.options.crs.latLngToPoint(latlng, _map.zoom));
+    });
+    pointsInCustomPoint = simplify(pointsInCustomPoint, tolerance: tolerance);
+    pointsInCustomPoint.forEach((point) {
+      simplifiedPoints.add(_map.options.crs.pointToLatLng(point, _map.zoom)!);
+    });
+    return simplifiedPoints;
+  } else {
+    return points;
+  }
+}
+
 class PolygonLayerOptions extends LayerOptions {
   final List<Polygon> polygons;
   final bool polygonCulling;
+  final double symplifyTolerance;
 
   /// screen space culling of polygons based on bounding box
   PolygonLayerOptions({
     Key? key,
     this.polygons = const [],
     this.polygonCulling = false,
+    this.symplifyTolerance = 1.0,
     Stream<void>? rebuild,
   }) : super(key: key, rebuild: rebuild) {
     if (polygonCulling) {
@@ -43,8 +64,7 @@ class Polygon {
   final bool disableHolesBorder;
   final bool isDotted;
   final bool isFilled;
-  final double symplifyTolerance;
-  late LatLngBounds boundingBox;
+  late final LatLngBounds boundingBox;
   final String? label;
   final TextStyle labelStyle;
   final PolygonLabelPlacement labelPlacement;
@@ -61,7 +81,6 @@ class Polygon {
     this.label,
     this.labelStyle = const TextStyle(),
     this.labelPlacement = PolygonLabelPlacement.centroid,
-    this.symplifyTolerance = 1.0,
   }) : holeOffsetsList = null == holePointsList || holePointsList.isEmpty
             ? null
             : List.generate(holePointsList.length, (_) => []);
@@ -118,13 +137,17 @@ class PolygonLayer extends StatelessWidget {
           }
 
           _fillOffsets(
-              polygon.offsets, polygon.points, polygon.symplifyTolerance);
+              polygon.offsets,
+              simplifyPoints(
+                  polygon.points, polygonOpts.symplifyTolerance, map));
 
           if (null != polygon.holePointsList) {
             final len = polygon.holePointsList!.length;
             for (var i = 0; i < len; ++i) {
-              _fillOffsets(polygon.holeOffsetsList![i],
-                  polygon.holePointsList![i], polygon.symplifyTolerance);
+              _fillOffsets(
+                  polygon.holeOffsetsList![i],
+                  simplifyPoints(polygon.holePointsList![i],
+                      polygonOpts.symplifyTolerance, map));
             }
           }
 
@@ -143,20 +166,10 @@ class PolygonLayer extends StatelessWidget {
     );
   }
 
-  void _fillOffsets(
-      final List<Offset> offsets, final List<LatLng> points, double tolerance) {
-    List<CustomPoint> pointsInCustomPoint = [];
-    List<LatLng> simplifiedPoints = [];
-    points.forEach((latlng) {
-      pointsInCustomPoint.add(map.options.crs.latLngToPoint(latlng, map.zoom));
-    });
-    pointsInCustomPoint = simplify(pointsInCustomPoint, tolerance: tolerance);
-    pointsInCustomPoint.forEach((point) {
-      simplifiedPoints.add(map.options.crs.pointToLatLng(point, map.zoom)!);
-    });
-    final len = simplifiedPoints.length;
+  void _fillOffsets(final List<Offset> offsets, final List<LatLng> points) {
+    final len = points.length;
     for (var i = 0; i < len; ++i) {
-      LatLng point = simplifiedPoints[i];
+      final point = points[i];
 
       var pos = map.project(point);
       pos = pos.multiplyBy(map.getZoomScale(map.zoom, map.zoom)) -
