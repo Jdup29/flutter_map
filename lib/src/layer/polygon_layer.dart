@@ -31,6 +31,7 @@ class PolygonLayerOptions extends LayerOptions {
   final List<Polygon> polygons;
   final bool polygonCulling;
   final double symplifyTolerance;
+  final bool clickCursor;
 
   /// screen space culling of polygons based on bounding box
   PolygonLayerOptions({
@@ -38,6 +39,7 @@ class PolygonLayerOptions extends LayerOptions {
     this.polygons = const [],
     this.polygonCulling = false,
     this.symplifyTolerance = 1.0,
+    this.clickCursor = false,
     Stream<void>? rebuild,
   }) : super(key: key, rebuild: rebuild) {
     if (polygonCulling) {
@@ -151,12 +153,23 @@ class PolygonLayer extends StatelessWidget {
             }
           }
 
-          polygons.add(
-            CustomPaint(
+          if (polygonOpts.clickCursor == true) {
+            polygons.add(
+              GestureDetector(
+                child: MouseRegion(
+                    cursor: SystemMouseCursors.click,
+                    child: CustomPaint(
+                      painter: PolygonPainter(polygon),
+                      size: size,
+                    )),
+              ),
+            );
+          } else {
+            polygons.add(CustomPaint(
               painter: PolygonPainter(polygon),
               size: size,
-            ),
-          );
+            ));
+          }
         }
 
         return Stack(
