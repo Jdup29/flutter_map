@@ -8,17 +8,18 @@ import 'package:latlong2/latlong.dart' hide Path; // conflict with Path from UI
 import 'package:simplify/simplify.dart';
 
 List<LatLng> simplifyPoints(
-    final List<LatLng> points, double tolerance, MapState _map) {
+    final List<LatLng> points, double tolerance, MapState map) {
   if (tolerance > 0) {
     List<CustomPoint> pointsInCustomPoint = [];
-    List<LatLng> simplifiedPoints = [];
+    final List<LatLng> simplifiedPoints = [];
+    // ignore: avoid_function_literals_in_foreach_calls
     points.forEach((latlng) {
-      pointsInCustomPoint
-          .add(_map.options.crs.latLngToPoint(latlng, _map.zoom));
+      pointsInCustomPoint.add(map.options.crs.latLngToPoint(latlng, map.zoom));
     });
     pointsInCustomPoint = simplify(pointsInCustomPoint, tolerance: tolerance);
+    // ignore: avoid_function_literals_in_foreach_calls
     pointsInCustomPoint.forEach((point) {
-      simplifiedPoints.add(_map.options.crs.pointToLatLng(point, _map.zoom)!);
+      simplifiedPoints.add(map.options.crs.pointToLatLng(point, map.zoom)!);
     });
     return simplifiedPoints;
   } else {
@@ -291,8 +292,8 @@ class PolygonPainter extends CustomPainter {
 
       _paintBorder(canvas);
 
-      for (var offsets in polygonOpt.holeOffsetsList!) {
-        var path = Path();
+      for (final offsets in polygonOpt.holeOffsetsList!) {
+        final path = Path();
         path.addPolygon(offsets, true);
         paint
           ..style = PaintingStyle.fill
