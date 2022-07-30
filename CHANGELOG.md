@@ -1,6 +1,96 @@
 # Changelog
 
-## [1.1.0] - 2022
+## [2.1.1] - 2022/07/25
+
+Contains the following additions/removals:
+
+- None
+
+Contains the following bug fixes:
+
+- Removed a particularly illusive null-safety bug - [#1318](https://github.com/fleaflet/flutter_map/pull/1318)
+
+In other news:
+
+- None
+
+Many thanks to these contributors (in no particular order):
+
+- sergioisair (tested changed)
+- ... and all the maintainers
+
+## [2.1.0] - 2022/07/22
+
+Contains the following additions/removals:
+
+- Added built in keep alive functionality - [#1312](https://github.com/fleaflet/flutter_map/pull/1312)
+- Added disposal of `AnimationController` before it is reassigned - [#1303](https://github.com/fleaflet/flutter_map/pull/1303)
+- Added better polar projection support and example - [#1295](https://github.com/fleaflet/flutter_map/pull/1295)
+- Added stroke cap and stroke join options to `Polygon`s - [#1295](https://github.com/fleaflet/flutter_map/pull/1295)
+
+Contains the following bug fixes:
+
+- Removed a class of `LateInitializationError`s by reworking `MapController` lifecycle - [#1293](https://github.com/fleaflet/flutter_map/pull/1293) for [#1288](https://github.com/fleaflet/flutter_map/issues/1288)
+- Improved performance during painting `Polygon`s - [#1295](https://github.com/fleaflet/flutter_map/pull/1295)
+
+In other news:
+
+- None
+
+Many thanks to these contributors (in no particular order):
+
+- @Zverik
+- @rbellens
+- @JosefWN
+- ... and all the maintainers
+
+## [2.0.0] - 2022/07/11
+
+Contains the following additions/removals:
+
+- Added adjustable mouse wheel zoom speed - [#1289](https://github.com/fleaflet/flutter_map/pull/1289)
+- Multiple changes - [#1294](https://github.com/fleaflet/flutter_map/pull/1294)
+  - Added advanced header support, including 'User-Agent'
+  - Refactored `TileProvider`s
+  - Resolved multiple TODOs within codebase
+  - Removed old deprecated code
+
+Contains the following bug fixes:
+
+- Fixed unsymmetrical markers disappearing with unusually positioned anchors - [#1291](https://github.com/fleaflet/flutter_map/pull/1291)
+- Fixed potential for error 403s due to invalid/blocked 'User-Agent' header - [#1294](https://github.com/fleaflet/flutter_map/pull/1294)
+
+In other news:
+
+- None
+
+Many thanks to these contributors (in no particular order):
+
+- @mboe
+- @aytunch
+- @MichalTorma
+- ... and all the maintainers
+
+## [1.1.1] - 2022/06/25
+
+Contains the following additions/removals:
+
+- None
+
+Contains the following bug fixes:
+
+- None
+
+In other news:
+
+- The new documentation website is now live at <https://docs.fleaflet.dev>. Visit it today to get much improved setup and usage instructions, and more!
+
+Many thanks to these contributors (in no particular order):
+
+- All the documentation authors: <https://docs.fleaflet.dev/credits>
+- ... and all the maintainers
+
+## [1.1.0] - 2022/06/16
 
 Contains the following additions/removals:
 

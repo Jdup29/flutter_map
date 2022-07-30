@@ -1,5 +1,4 @@
 import 'dart:math';
-import 'dart:ui';
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -9,17 +8,18 @@ import 'package:latlong2/latlong.dart' hide Path; // conflict with Path from UI
 import 'package:simplify/simplify.dart';
 
 List<LatLng> simplifyPoints(
-    final List<LatLng> points, double tolerance, MapState _map) {
+    final List<LatLng> points, double tolerance, MapState map) {
   if (tolerance > 0) {
     List<CustomPoint> pointsInCustomPoint = [];
-    List<LatLng> simplifiedPoints = [];
+    final List<LatLng> simplifiedPoints = [];
+    // ignore: avoid_function_literals_in_foreach_calls
     points.forEach((latlng) {
-      pointsInCustomPoint
-          .add(_map.options.crs.latLngToPoint(latlng, _map.zoom));
+      pointsInCustomPoint.add(map.options.crs.latLngToPoint(latlng, map.zoom));
     });
     pointsInCustomPoint = simplify(pointsInCustomPoint, tolerance: tolerance);
+    // ignore: avoid_function_literals_in_foreach_calls
     pointsInCustomPoint.forEach((point) {
-      simplifiedPoints.add(_map.options.crs.pointToLatLng(point, _map.zoom)!);
+      simplifiedPoints.add(map.options.crs.pointToLatLng(point, map.zoom)!);
     });
     return simplifiedPoints;
   } else {
@@ -66,6 +66,8 @@ class Polygon {
   final bool disableHolesBorder;
   final bool isDotted;
   final bool isFilled;
+  final StrokeCap strokeCap;
+  final StrokeJoin strokeJoin;
   late final LatLngBounds boundingBox;
   final String? label;
   final TextStyle labelStyle;
@@ -80,6 +82,8 @@ class Polygon {
     this.disableHolesBorder = false,
     this.isDotted = false,
     this.isFilled = false,
+    this.strokeCap = StrokeCap.round,
+    this.strokeJoin = StrokeJoin.round,
     this.label,
     this.labelStyle = const TextStyle(),
     this.labelPlacement = PolygonLabelPlacement.centroid,
@@ -183,14 +187,8 @@ class PolygonLayer extends StatelessWidget {
     final len = points.length;
     for (var i = 0; i < len; ++i) {
       final point = points[i];
-
-      var pos = map.project(point);
-      pos = pos.multiplyBy(map.getZoomScale(map.zoom, map.zoom)) -
-          map.getPixelOrigin();
-      offsets.add(Offset(pos.x.toDouble(), pos.y.toDouble()));
-      if (i > 0) {
-        offsets.add(Offset(pos.x.toDouble(), pos.y.toDouble()));
-      }
+      final offset = map.getOffsetFromOrigin(point);
+      offsets.add(offset);
     }
   }
 }
@@ -211,13 +209,13 @@ class PolygonPainter extends CustomPainter {
 
   void _paintBorder(Canvas canvas) {
     if (polygonOpt.borderStrokeWidth > 0.0) {
-      final borderRadius = (polygonOpt.borderStrokeWidth / 2);
-
       final borderPaint = Paint()
         ..color = polygonOpt.borderColor
         ..strokeWidth = polygonOpt.borderStrokeWidth;
 
       if (polygonOpt.isDotted) {
+        final borderRadius = (polygonOpt.borderStrokeWidth / 2);
+
         final spacing = polygonOpt.borderStrokeWidth * 1.5;
         _paintDottedLine(
             canvas, polygonOpt.offsets, borderRadius, spacing, borderPaint);
@@ -230,12 +228,17 @@ class PolygonPainter extends CustomPainter {
           }
         }
       } else {
-        _paintLine(canvas, polygonOpt.offsets, borderRadius, borderPaint);
+        borderPaint
+          ..style = PaintingStyle.stroke
+          ..strokeCap = polygonOpt.strokeCap
+          ..strokeJoin = polygonOpt.strokeJoin;
+
+        _paintLine(canvas, polygonOpt.offsets, borderPaint);
 
         if (!polygonOpt.disableHolesBorder &&
             null != polygonOpt.holeOffsetsList) {
           for (final offsets in polygonOpt.holeOffsetsList!) {
-            _paintLine(canvas, offsets, borderRadius, borderPaint);
+            _paintLine(canvas, offsets, borderPaint);
           }
         }
       }
@@ -264,12 +267,12 @@ class PolygonPainter extends CustomPainter {
     canvas.drawCircle(offsets.last, radius, paint);
   }
 
-  void _paintLine(
-      Canvas canvas, List<Offset> offsets, double radius, Paint paint) {
-    canvas.drawPoints(PointMode.lines, [...offsets, offsets[0]], paint);
-    for (final offset in offsets) {
-      canvas.drawCircle(offset, radius, paint);
+  void _paintLine(Canvas canvas, List<Offset> offsets, Paint paint) {
+    if (offsets.isEmpty) {
+      return;
     }
+    final path = Path()..addPolygon(offsets, true);
+    canvas.drawPath(path, paint);
   }
 
   void _paintPolygon(Canvas canvas, Rect rect) {
@@ -289,8 +292,8 @@ class PolygonPainter extends CustomPainter {
 
       _paintBorder(canvas);
 
-      for (var offsets in polygonOpt.holeOffsetsList!) {
-        var path = Path();
+      for (final offsets in polygonOpt.holeOffsetsList!) {
+        final path = Path();
         path.addPolygon(offsets, true);
         paint
           ..style = PaintingStyle.fill

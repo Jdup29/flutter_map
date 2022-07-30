@@ -5,6 +5,9 @@ import 'dart:math';
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/widgets.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:positioned_tap_detector_2/positioned_tap_detector_2.dart';
+
 import 'package:flutter_map/src/core/center_zoom.dart';
 import 'package:flutter_map/src/core/point.dart';
 import 'package:flutter_map/src/geo/crs/crs.dart';
@@ -16,8 +19,6 @@ import 'package:flutter_map/src/layer/layer.dart';
 import 'package:flutter_map/src/map/flutter_map_state.dart';
 import 'package:flutter_map/src/map/map.dart';
 import 'package:flutter_map/src/plugins/plugin.dart';
-import 'package:latlong2/latlong.dart';
-import 'package:positioned_tap_detector_2/positioned_tap_detector_2.dart';
 
 export 'package:flutter_map/src/core/center_zoom.dart';
 export 'package:flutter_map/src/core/point.dart';
@@ -38,9 +39,11 @@ export 'package:flutter_map/src/layer/tile_layer/coords.dart';
 export 'package:flutter_map/src/layer/tile_layer/tile.dart';
 export 'package:flutter_map/src/layer/tile_layer/tile_builder.dart';
 export 'package:flutter_map/src/layer/tile_layer/tile_layer.dart';
+export 'package:flutter_map/src/layer/tile_layer/tile_provider/base_tile_provider.dart';
 export 'package:flutter_map/src/layer/tile_layer/tile_provider/file_tile_provider_io.dart'
     if (dart.library.html) 'package:flutter_map/src/layer/tile_layer/tile_provider/file_tile_provider_web.dart';
-export 'package:flutter_map/src/layer/tile_layer/tile_provider/tile_provider.dart';
+export 'package:flutter_map/src/layer/tile_layer/tile_provider/tile_provider_io.dart'
+    if (dart.library.html) 'package:flutter_map/src/layer/tile_layer/tile_provider/tile_provider_web.dart';
 export 'package:flutter_map/src/plugins/plugin.dart';
 
 /// Renders a map composed of a list of layers powered by [LayerOptions].
@@ -77,18 +80,17 @@ class FlutterMap extends StatefulWidget {
   final MapOptions options;
 
   /// A [MapController], used to control the map.
-  final MapController mapController;
+  final MapController? mapController;
 
-  FlutterMap({
+  const FlutterMap({
     Key? key,
     required this.options,
     this.layers = const [],
     this.nonRotatedLayers = const [],
     this.children = const [],
     this.nonRotatedChildren = const [],
-    MapController? mapController,
-  })  : mapController = mapController ?? MapController(),
-        super(key: key);
+    this.mapController,
+  }) : super(key: key);
 
   @override
   FlutterMapState createState() => FlutterMapState();
@@ -253,6 +255,7 @@ class MapOptions {
   /// his mouse. This is supported on web and desktop, but might also work well
   /// on Android. A [Listener] is used to capture the onPointerSignal events.
   final bool enableScrollWheel;
+  final double scrollWheelVelocity;
 
   final double? minZoom;
   final double? maxZoom;
@@ -287,6 +290,14 @@ class MapOptions {
   /// would represent the full extent of the map, so no gray area outside of it.
   final LatLngBounds? maxBounds;
 
+  /// Flag to enable the built in keep alive functionality
+  ///
+  /// If the map is within a complex layout, such as a [ListView] or [PageView],
+  /// the map will reset to it's inital position after it appears back into view.
+  /// To ensure this doesn't happen, enable this flag to prevent the [FlutterMap]
+  /// widget from rebuilding.
+  final bool keepAlive;
+
   _SafeArea? _safeAreaCache;
   double? _safeAreaZoom;
 
@@ -309,6 +320,7 @@ class MapOptions {
     this.pinchMoveWinGestures =
         MultiFingerGesture.pinchZoom | MultiFingerGesture.pinchMove,
     this.enableScrollWheel = true,
+    this.scrollWheelVelocity = 0.005,
     this.minZoom,
     this.maxZoom,
     this.interactiveFlags = InteractiveFlag.all,
@@ -329,6 +341,7 @@ class MapOptions {
     this.swPanBoundary,
     this.nePanBoundary,
     this.maxBounds,
+    this.keepAlive = false,
   })  : center = center ?? LatLng(50.5, 30.51),
         assert(rotationThreshold >= 0.0),
         assert(pinchZoomThreshold >= 0.0),
