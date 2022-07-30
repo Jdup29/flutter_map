@@ -22,7 +22,7 @@ class MapControllerImpl implements MapController {
     _mapEventSink.close();
   }
 
-  late final MapState _state;
+  late MapState _state;
 
   @override
   set state(MapState state) {
@@ -565,6 +565,11 @@ class MapState {
 
   CustomPoint getPixelOrigin() {
     return _pixelOrigin;
+  }
+
+  Offset getOffsetFromOrigin(LatLng pos) {
+    final delta = project(pos) - getPixelOrigin();
+    return Offset(delta.x.toDouble(), delta.y.toDouble());
   }
 
   CustomPoint getNewPixelOrigin(LatLng center, [double? zoom]) {

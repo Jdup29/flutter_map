@@ -58,7 +58,9 @@ abstract class MapGestureMixin extends State<FlutterMap>
       // Calculate new zoom level
       final minZoom = mapState.options.minZoom ?? 0.0;
       final maxZoom = mapState.options.maxZoom ?? double.infinity;
-      final newZoom = (mapState.zoom + pointerSignal.scrollDelta.dy * -0.005)
+      final newZoom = (mapState.zoom -
+              pointerSignal.scrollDelta.dy *
+                  mapState.options.scrollWheelVelocity)
           .clamp(minZoom, maxZoom);
       // Calculate offset of mouse cursor from viewport center
       final List<dynamic> newCenterZoom = _getNewEventCenterZoomPosition(
@@ -707,7 +709,6 @@ abstract class MapGestureMixin extends State<FlutterMap>
     _doubleTapHoldMaxDelay?.cancel();
 
     final flags = options.interactiveFlags;
-    // TODO: is this pinchZoom? never seen this fired
     if (InteractiveFlag.hasFlag(flags, InteractiveFlag.pinchZoom)) {
       final zoom = mapState.zoom;
       final focalOffset = details.localFocalPoint;
