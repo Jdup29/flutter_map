@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map_example/widgets/drawer.dart';
 import 'package:latlong2/latlong.dart';
-
-import '../widgets/drawer.dart';
 
 class PolylinePage extends StatefulWidget {
   static const String route = 'polyline';
@@ -17,18 +16,18 @@ class _PolylinePageState extends State<PolylinePage> {
   late Future<List<Polyline>> polylines;
 
   Future<List<Polyline>> getPolylines() async {
-    var polyLines = [
+    final polyLines = [
       Polyline(
         points: [
           LatLng(50.5, -0.09),
           LatLng(51.3498, -6.2603),
           LatLng(53.8566, 2.3522),
         ],
-        strokeWidth: 4.0,
+        strokeWidth: 50,
         color: Colors.amber,
       ),
     ];
-    await Future.delayed(const Duration(seconds: 3));
+    await Future<void>.delayed(const Duration(seconds: 3));
     return polyLines;
   }
 
@@ -40,13 +39,13 @@ class _PolylinePageState extends State<PolylinePage> {
 
   @override
   Widget build(BuildContext context) {
-    var points = <LatLng>[
+    final points = <LatLng>[
       LatLng(51.5, -0.09),
       LatLng(53.3498, -6.2603),
       LatLng(48.8566, 2.3522),
     ];
 
-    var pointsGradient = <LatLng>[
+    final pointsGradient = <LatLng>[
       LatLng(55.5, -0.09),
       LatLng(54.3498, -6.2603),
       LatLng(52.8566, 2.3522),
@@ -56,7 +55,7 @@ class _PolylinePageState extends State<PolylinePage> {
         appBar: AppBar(title: const Text('Polylines')),
         drawer: buildDrawer(context, PolylinePage.route),
         body: Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.all(8),
           child: FutureBuilder<List<Polyline>>(
             future: polylines,
             builder:
@@ -66,14 +65,14 @@ class _PolylinePageState extends State<PolylinePage> {
                 return Column(
                   children: [
                     const Padding(
-                      padding: EdgeInsets.only(top: 8.0, bottom: 8.0),
+                      padding: EdgeInsets.only(top: 8, bottom: 8),
                       child: Text('Polylines'),
                     ),
                     Flexible(
                       child: FlutterMap(
                         options: MapOptions(
                           center: LatLng(51.5, -0.09),
-                          zoom: 5.0,
+                          zoom: 5,
                           onTap: (tapPosition, point) {
                             setState(() {
                               debugPrint('onTap');
@@ -81,27 +80,26 @@ class _PolylinePageState extends State<PolylinePage> {
                             });
                           },
                         ),
-                        layers: [
-                          TileLayerOptions(
+                        children: [
+                          TileLayer(
                             urlTemplate:
-                                'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                            subdomains: ['a', 'b', 'c'],
+                                'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                             userAgentPackageName:
                                 'dev.fleaflet.flutter_map.example',
                           ),
-                          PolylineLayerOptions(
+                          PolylineLayer(
                             polylines: [
                               Polyline(
                                   points: points,
-                                  strokeWidth: 4.0,
+                                  strokeWidth: 4,
                                   color: Colors.purple),
                             ],
                           ),
-                          PolylineLayerOptions(
+                          PolylineLayer(
                             polylines: [
                               Polyline(
                                 points: pointsGradient,
-                                strokeWidth: 4.0,
+                                strokeWidth: 4,
                                 gradientColors: [
                                   const Color(0xffE40203),
                                   const Color(0xffFEED00),
@@ -110,7 +108,7 @@ class _PolylinePageState extends State<PolylinePage> {
                               ),
                             ],
                           ),
-                          PolylineLayerOptions(
+                          PolylineLayer(
                             polylines: snapshot.data!,
                             polylineCulling: true,
                           ),

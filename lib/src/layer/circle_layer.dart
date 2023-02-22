@@ -1,18 +1,9 @@
 import 'package:flutter/widgets.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:flutter_map/src/map/map.dart';
+import 'package:flutter_map/src/map/flutter_map_state.dart';
 import 'package:latlong2/latlong.dart' hide Path;
 
-class CircleLayerOptions extends LayerOptions {
-  final List<CircleMarker> circles;
-  CircleLayerOptions({
-    Key? key,
-    this.circles = const [],
-    Stream<void>? rebuild,
-  }) : super(key: key, rebuild: rebuild);
-}
-
 class CircleMarker {
+  final Key? key;
   final LatLng point;
   final double radius;
   final Color color;
@@ -20,10 +11,12 @@ class CircleMarker {
   final Color borderColor;
   final bool useRadiusInMeter;
   Offset offset = Offset.zero;
-  num realRadius = 0;
+  double realRadius = 0;
+
   CircleMarker({
     required this.point,
     required this.radius,
+    this.key,
     this.useRadiusInMeter = false,
     this.color = const Color(0xFF00FF00),
     this.borderStrokeWidth = 0.0,
@@ -31,41 +24,21 @@ class CircleMarker {
   });
 }
 
-class CircleLayerWidget extends StatelessWidget {
-  final CircleLayerOptions options;
-
-  const CircleLayerWidget({Key? key, required this.options}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final mapState = MapState.maybeOf(context)!;
-    return CircleLayer(options, mapState, mapState.onMoved);
-  }
-}
-
 class CircleLayer extends StatelessWidget {
-  final CircleLayerOptions circleOpts;
-  final MapState map;
-  final Stream<void>? stream;
-  CircleLayer(this.circleOpts, this.map, this.stream)
-      : super(key: circleOpts.key);
+  final List<CircleMarker> circles;
+  const CircleLayer({
+    super.key,
+    this.circles = const [],
+  });
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints bc) {
         final size = Size(bc.maxWidth, bc.maxHeight);
-        return _build(context, size);
-      },
-    );
-  }
-
-  Widget _build(BuildContext context, Size size) {
-    return StreamBuilder<void>(
-      stream: stream, // a Stream<void> or null
-      builder: (BuildContext context, _) {
+        final map = FlutterMapState.maybeOf(context)!;
         final circleWidgets = <Widget>[];
-        for (final circle in circleOpts.circles) {
+        for (final circle in circles) {
           circle.offset = map.getOffsetFromOrigin(circle.point);
 
           if (circle.useRadiusInMeter) {
@@ -76,6 +49,7 @@ class CircleLayer extends StatelessWidget {
 
           circleWidgets.add(
             CustomPaint(
+              key: circle.key,
               painter: CirclePainter(circle),
               size: size,
             ),
@@ -102,11 +76,8 @@ class CirclePainter extends CustomPainter {
       ..style = PaintingStyle.fill
       ..color = circle.color;
 
-    _paintCircle(
-        canvas,
-        circle.offset,
-        circle.useRadiusInMeter ? circle.realRadius as double : circle.radius,
-        paint);
+    _paintCircle(canvas, circle.offset,
+        circle.useRadiusInMeter ? circle.realRadius : circle.radius, paint);
 
     if (circle.borderStrokeWidth > 0) {
       final paint = Paint()
@@ -114,11 +85,8 @@ class CirclePainter extends CustomPainter {
         ..color = circle.borderColor
         ..strokeWidth = circle.borderStrokeWidth;
 
-      _paintCircle(
-          canvas,
-          circle.offset,
-          circle.useRadiusInMeter ? circle.realRadius as double : circle.radius,
-          paint);
+      _paintCircle(canvas, circle.offset,
+          circle.useRadiusInMeter ? circle.realRadius : circle.radius, paint);
     }
   }
 

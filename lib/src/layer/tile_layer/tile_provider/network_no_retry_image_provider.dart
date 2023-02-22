@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
@@ -11,6 +10,9 @@ class FMNetworkNoRetryImageProvider
   /// A valid URL, which is the location of the image to be fetched
   final String url;
 
+  /// The fallback URL from which the image will be fetched.
+  final String? fallbackUrl;
+
   /// The client which will be used to fetch the image
   final HttpClient httpClient;
 
@@ -19,15 +21,16 @@ class FMNetworkNoRetryImageProvider
 
   FMNetworkNoRetryImageProvider(
     this.url, {
+    required this.fallbackUrl,
     HttpClient? httpClient,
     this.headers = const {},
   }) : httpClient = httpClient ?? HttpClient()
           ..userAgent = null;
 
   @override
-  ImageStreamCompleter load(
+  ImageStreamCompleter loadBuffer(
     FMNetworkNoRetryImageProvider key,
-    DecoderCallback decode,
+    DecoderBufferCallback decode,
   ) {
     //ignore: close_sinks
     final StreamController<ImageChunkEvent> chunkEvents =
@@ -53,13 +56,16 @@ class FMNetworkNoRetryImageProvider
 
   Future<Codec> _loadAsync({
     required FMNetworkNoRetryImageProvider key,
-    required DecoderCallback decode,
+    required DecoderBufferCallback decode,
     required StreamController<ImageChunkEvent> chunkEvents,
+    bool useFallback = false,
   }) async {
     try {
       assert(key == this);
+      assert(useFallback == false || fallbackUrl != null);
 
-      final Uri resolved = Uri.base.resolve(key.url);
+      final Uri resolved =
+          Uri.base.resolve(useFallback ? key.fallbackUrl! : key.url);
 
       final HttpClientRequest request = await httpClient.getUrl(resolved);
 
@@ -87,15 +93,23 @@ class FMNetworkNoRetryImageProvider
         throw Exception('NetworkImage is an empty file: $resolved');
       }
 
-      return decode(bytes);
+      return decode(await ImmutableBuffer.fromUint8List(bytes));
     } catch (e) {
+      if (!useFallback && fallbackUrl != null) {
+        return _loadAsync(
+          key: key,
+          decode: decode,
+          chunkEvents: chunkEvents,
+          useFallback: true,
+        );
+      }
+
       scheduleMicrotask(() {
         _ambiguate(_ambiguate(PaintingBinding.instance)?.imageCache)
             ?.evict(key);
       });
-      rethrow;
-    } finally {
       chunkEvents.close();
+      rethrow;
     }
   }
 

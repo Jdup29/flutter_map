@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map_example/widgets/drawer.dart';
 import 'package:latlong2/latlong.dart';
-
-import '../widgets/drawer.dart';
 
 class TileBuilderPage extends StatefulWidget {
   static const String route = '/tile_builder_example';
@@ -14,10 +13,11 @@ class TileBuilderPage extends StatefulWidget {
 }
 
 class _TileBuilderPageState extends State<TileBuilderPage> {
-  var darkMode = false;
-  var loadingTime = false;
-  var showCoords = false;
-  var grid = false;
+  bool darkMode = false;
+  bool loadingTime = false;
+  bool showCoords = false;
+  bool grid = false;
+  int panBuffer = 0;
 
   // mix of [coordinateDebugTileBuilder] and [loadingTimeDebugTileBuilder] from tile_builder.dart
   Widget tileBuilder(BuildContext context, Widget tileWidget, Tile tile) {
@@ -38,7 +38,7 @@ class _TileBuilderPageState extends State<TileBuilderPage> {
                 if (showCoords)
                   Text(
                     '${coords.x.floor()} : ${coords.y.floor()} : ${coords.z.floor()}',
-                    style: Theme.of(context).textTheme.headline5,
+                    style: Theme.of(context).textTheme.headlineSmall,
                   ),
                 if (loadingTime)
                   Text(
@@ -46,7 +46,7 @@ class _TileBuilderPageState extends State<TileBuilderPage> {
                         ? 'Loading'
                         // sometimes result is negative which shouldn't happen, abs() corrects it
                         : '${(tile.loaded!.millisecond - tile.loadStarted.millisecond).abs()} ms',
-                    style: Theme.of(context).textTheme.headline5,
+                    style: Theme.of(context).textTheme.headlineSmall,
                   ),
               ],
             ),
@@ -103,36 +103,48 @@ class _TileBuilderPageState extends State<TileBuilderPage> {
             icon: Icon(darkMode ? Icons.brightness_high : Icons.brightness_2),
             onPressed: () => setState(() => darkMode = !darkMode),
           ),
+          const SizedBox(height: 8),
+          FloatingActionButton.extended(
+            heroTag: 'panBuffer',
+            label: Text(
+              panBuffer == 0 ? 'panBuffer off' : 'panBuffer on',
+              textAlign: TextAlign.center,
+            ),
+            icon: Icon(grid ? Icons.grid_off : Icons.grid_on),
+            onPressed: () => setState(() {
+              panBuffer = panBuffer == 0 ? 1 : 0;
+            }),
+          ),
         ],
       ),
       body: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(8),
         child: FlutterMap(
           options: MapOptions(
             center: LatLng(51.5, -0.09),
-            zoom: 5.0,
+            zoom: 5,
           ),
-          layers: [
-            TileLayerOptions(
-              urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-              subdomains: ['a', 'b', 'c'],
+          children: [
+            TileLayer(
+              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
               userAgentPackageName: 'dev.fleaflet.flutter_map.example',
               tileBuilder: tileBuilder,
               tilesContainerBuilder:
                   darkMode ? darkModeTilesContainerBuilder : null,
+              panBuffer: panBuffer,
             ),
-            MarkerLayerOptions(
+            MarkerLayer(
               markers: <Marker>[
                 Marker(
-                  width: 80.0,
-                  height: 80.0,
+                  width: 80,
+                  height: 80,
                   point: LatLng(51.5, -0.09),
                   builder: (ctx) => const FlutterLogo(
                     key: ObjectKey(Colors.blue),
                   ),
                 ),
               ],
-            )
+            ),
           ],
         ),
       ),

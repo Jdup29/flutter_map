@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/plugin_api.dart';
+import 'package:flutter_map_example/widgets/drawer.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:proj4dart/proj4dart.dart' as proj4;
-
-import '../../widgets/drawer.dart';
 
 class EPSG3413Page extends StatefulWidget {
   static const String route = 'EPSG3413 Page';
@@ -90,31 +89,31 @@ class _EPSG3413PageState extends State<EPSG3413Page> {
       useRadiusInMeter: true,
       color: Colors.transparent,
       borderColor: Colors.black,
-      borderStrokeWidth: 1.0,
+      borderStrokeWidth: 1,
     ));
 
     return Scaffold(
       appBar: AppBar(title: const Text('EPSG:3413 CRS')),
       drawer: buildDrawer(context, EPSG3413Page.route),
       body: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(8),
         child: Column(
           children: [
             const Padding(
-              padding: EdgeInsets.only(top: 8.0, bottom: 2.0),
+              padding: EdgeInsets.only(top: 8, bottom: 2),
               child: Text(
                 'Tricky edge-cases with polar projections',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color: Colors.blue,
-                  fontSize: 16.0,
+                  fontSize: 16,
                 ),
               ),
             ),
             const Text(
                 'Details: https://github.com/fleaflet/flutter_map/pull/1295'),
             const Padding(
-              padding: EdgeInsets.only(top: 8.0, bottom: 2.0),
+              padding: EdgeInsets.only(top: 8, bottom: 2),
               child: SizedBox(
                 width: 500,
                 child: Text(
@@ -131,11 +130,11 @@ class _EPSG3413PageState extends State<EPSG3413Page> {
                 options: MapOptions(
                   crs: epsg3413CRS,
                   center: LatLng(90, 0),
-                  zoom: 3.0,
+                  zoom: 3,
                   maxZoom: maxZoom,
                 ),
-                layers: [
-                  TileLayerOptions(
+                children: [
+                  TileLayer(
                     opacity: 1,
                     backgroundColor: Colors.transparent,
                     wmsOptions: WMSTileLayerOptions(
@@ -147,7 +146,7 @@ class _EPSG3413PageState extends State<EPSG3413Page> {
                       layers: ['gebco_north_polar_view'],
                     ),
                   ),
-                  OverlayImageLayerOptions(
+                  OverlayImageLayer(
                     overlayImages: [
                       OverlayImage(
                         bounds: LatLngBounds(
@@ -155,14 +154,12 @@ class _EPSG3413PageState extends State<EPSG3413Page> {
                           LatLng(85.2802493, 79.794166),
                         ),
                         imageProvider: Image.asset(
-                          'map/epsg3413/amsr2.png',
+                          'assets/map/epsg3413/amsr2.png',
                         ).image,
                       )
                     ],
                   ),
-                  CircleLayerOptions(
-                    circles: circles,
-                  ),
+                  CircleLayer(circles: circles),
                 ],
               ),
             ),

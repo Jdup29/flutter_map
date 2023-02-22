@@ -1,10 +1,7 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map_example/widgets/drawer.dart';
 import 'package:latlong2/latlong.dart';
-
-import '../widgets/drawer.dart';
 
 class InteractiveTestPage extends StatefulWidget {
   static const String route = 'interactive_test_page';
@@ -18,26 +15,14 @@ class InteractiveTestPage extends StatefulWidget {
 }
 
 class _InteractiveTestPageState extends State<InteractiveTestPage> {
-  late final MapController mapController;
-
   // Enable pinchZoom and doubleTapZoomBy by default
   int flags = InteractiveFlag.pinchZoom | InteractiveFlag.doubleTapZoom;
 
-  late final StreamSubscription<MapEvent> subscription;
+  MapEvent? _latestEvent;
 
   @override
   void initState() {
     super.initState();
-    mapController = MapController();
-
-    subscription = mapController.mapEventStream.listen(onMapEvent);
-  }
-
-  @override
-  void dispose() {
-    subscription.cancel();
-
-    super.dispose();
   }
 
   void onMapEvent(MapEvent mapEvent) {
@@ -45,6 +30,10 @@ class _InteractiveTestPageState extends State<InteractiveTestPage> {
       // do not flood console with move and rotate events
       debugPrint(mapEvent.toString());
     }
+
+    setState(() {
+      _latestEvent = mapEvent;
+    });
   }
 
   void updateFlags(int flag) {
@@ -63,7 +52,7 @@ class _InteractiveTestPageState extends State<InteractiveTestPage> {
       appBar: AppBar(title: const Text('Test out Interactive flags!')),
       drawer: buildDrawer(context, InteractiveTestPage.route),
       body: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(8),
         child: Column(
           children: [
             Row(
@@ -147,40 +136,26 @@ class _InteractiveTestPageState extends State<InteractiveTestPage> {
               ],
             ),
             Padding(
-              padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
+              padding: const EdgeInsets.only(top: 8, bottom: 8),
               child: Center(
-                child: StreamBuilder<MapEvent>(
-                  stream: mapController.mapEventStream,
-                  builder:
-                      (BuildContext context, AsyncSnapshot<MapEvent> snapshot) {
-                    if (!snapshot.hasData) {
-                      return const Text(
-                        'Current event: none\nSource: none',
-                        textAlign: TextAlign.center,
-                      );
-                    }
-
-                    return Text(
-                      'Current event: ${snapshot.data.runtimeType}\nSource: ${snapshot.data!.source}',
-                      textAlign: TextAlign.center,
-                    );
-                  },
+                child: Text(
+                  'Current event: ${_latestEvent?.runtimeType ?? "none"}\nSource: ${_latestEvent?.source ?? "none"}',
+                  textAlign: TextAlign.center,
                 ),
               ),
             ),
             Flexible(
               child: FlutterMap(
-                mapController: mapController,
                 options: MapOptions(
+                  onMapEvent: onMapEvent,
                   center: LatLng(51.5, -0.09),
-                  zoom: 11.0,
+                  zoom: 11,
                   interactiveFlags: flags,
                 ),
-                layers: [
-                  TileLayerOptions(
+                children: [
+                  TileLayer(
                     urlTemplate:
-                        'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                    subdomains: ['a', 'b', 'c'],
+                        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                     userAgentPackageName: 'dev.fleaflet.flutter_map.example',
                   ),
                 ],

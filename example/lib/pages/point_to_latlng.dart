@@ -1,10 +1,7 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map_example/widgets/drawer.dart';
 import 'package:latlong2/latlong.dart';
-
-import '../widgets/drawer.dart';
 
 class PointToLatLngPage extends StatefulWidget {
   static const String route = 'point_to_latlng';
@@ -18,8 +15,7 @@ class PointToLatLngPage extends StatefulWidget {
 }
 
 class PointToLatlngPage extends State<PointToLatLngPage> {
-  late final MapController mapController;
-  late final StreamSubscription mapEventSubscription;
+  late final MapController mapController = MapController();
   final pointSize = 40.0;
   final pointY = 200.0;
 
@@ -28,13 +24,9 @@ class PointToLatlngPage extends State<PointToLatLngPage> {
   @override
   void initState() {
     super.initState();
-    mapController = MapController();
 
-    mapEventSubscription = mapController.mapEventStream
-        .listen((mapEvent) => onMapEvent(mapEvent, context));
-
-    Future.delayed(Duration.zero, () {
-      mapController.onReady.then((_) => _updatePointLatLng(context));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      updatePoint(null, context);
     });
   }
 
@@ -46,13 +38,15 @@ class PointToLatlngPage extends State<PointToLatLngPage> {
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           FloatingActionButton(
+            heroTag: 'rotate',
             child: const Icon(Icons.rotate_right),
-            onPressed: () => mapController.rotate(60.0),
+            onPressed: () => mapController.rotate(60),
           ),
           const SizedBox(height: 15),
           FloatingActionButton(
+            heroTag: 'cancel',
             child: const Icon(Icons.cancel),
-            onPressed: () => mapController.rotate(0.0),
+            onPressed: () => mapController.rotate(0),
           ),
         ],
       ),
@@ -62,21 +56,20 @@ class PointToLatlngPage extends State<PointToLatLngPage> {
           FlutterMap(
             mapController: mapController,
             options: MapOptions(
+              onMapEvent: (event) {
+                updatePoint(null, context);
+              },
               center: LatLng(51.5, -0.09),
-              zoom: 5.0,
-              minZoom: 3.0,
+              zoom: 5,
+              minZoom: 3,
             ),
             children: [
-              TileLayerWidget(
-                  options: TileLayerOptions(
-                urlTemplate:
-                    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                subdomains: ['a', 'b', 'c'],
+              TileLayer(
+                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                 userAgentPackageName: 'dev.fleaflet.flutter_map.example',
-              )),
+              ),
               if (latLng != null)
-                MarkerLayerWidget(
-                    options: MarkerLayerOptions(
+                MarkerLayer(
                   markers: [
                     Marker(
                       width: pointSize,
@@ -85,7 +78,7 @@ class PointToLatlngPage extends State<PointToLatLngPage> {
                       builder: (ctx) => const FlutterLogo(),
                     )
                   ],
-                ))
+                )
             ],
           ),
           Container(
@@ -110,27 +103,14 @@ class PointToLatlngPage extends State<PointToLatLngPage> {
     );
   }
 
-  void onMapEvent(MapEvent mapEvent, BuildContext context) {
-    _updatePointLatLng(context);
-  }
-
-  void _updatePointLatLng(context) {
+  void updatePoint(MapEvent? event, BuildContext context) {
     final pointX = _getPointX(context);
-
-    final latLng = mapController.pointToLatLng(CustomPoint(pointX, pointY));
-
     setState(() {
-      this.latLng = latLng;
+      latLng = mapController.pointToLatLng(CustomPoint(pointX, pointY));
     });
   }
 
   double _getPointX(BuildContext context) {
     return MediaQuery.of(context).size.width / 2;
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    mapEventSubscription.cancel();
   }
 }

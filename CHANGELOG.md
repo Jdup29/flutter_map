@@ -1,5 +1,105 @@
 # Changelog
 
+## [3.2.0] - 2022/02/XX
+
+Contains the following additions/removals:
+
+- Removed `LatLngBounds.pad` (unused and broken) method - [#1427](https://github.com/fleaflet/flutter_map/pull/1427)
+- Migrated `LatLngBounds` to proper null safety - [#1431](https://github.com/fleaflet/flutter_map/pull/1431)
+- Minor example application improvements - [#1440](https://github.com/fleaflet/flutter_map/pull/1440)
+
+Contains the following bug fixes:
+
+- Fixed deprecations - [#1438](https://github.com/fleaflet/flutter_map/pull/1438)
+
+Many thanks to these contributors (in no particular order):
+
+- @pablojimpas
+- @augustweinbren
+- @ignatz
+- ... and all the maintainers
+
+## [3.1.0] - 2022/12/21
+
+Contains the following additions/removals:
+
+- Added fallback URLs - [#1348](https://github.com/fleaflet/flutter_map/pull/1348) for [#1203](https://github.com/fleaflet/flutter_map/issues/1203)
+- Added parameter to force integer zoom levels to `FitBoundsOptions` - [#1367](https://github.com/fleaflet/flutter_map/pull/1367)
+- Added `Key`s to `Polygon`s, `Polyline`s, and `CircleMarker`s - [#1402](https://github.com/fleaflet/flutter_map/pull/1402) & [#1403](https://github.com/fleaflet/flutter_map/pull/1403)
+- Added `Polyline` parameter to treat width in meters - [#1404](https://github.com/fleaflet/flutter_map/pull/1404)
+- Added buffer feature to `TileLayer` to preload surrounding tiles - [#1405](https://github.com/fleaflet/flutter_map/pull/1405) for [#1337](https://github.com/fleaflet/flutter_map/issues/1337)
+- Deprecated obsolete parameter - [#1368](https://github.com/fleaflet/flutter_map/pull/1368)
+
+Contains the following bug fixes:
+
+- Improved tile handling to simplify internals - [#1356](https://github.com/fleaflet/flutter_map/pull/1356)
+- Improved performance by removing unnecessary casts - [#1357](https://github.com/fleaflet/flutter_map/pull/1357)
+- Fixed ESPG:3413 example - [#1359](https://github.com/fleaflet/flutter_map/pull/1359)
+- Fixed tile layer reset example - [#1372](https://github.com/fleaflet/flutter_map/pull/1372)
+- Fixed issue with `MapController` movement - [#1374](https://github.com/fleaflet/flutter_map/pull/1374)
+- Fixed flickering issue with `fitBounds` - [#1376](https://github.com/fleaflet/flutter_map/pull/1376)
+- Fixed `fitBounds`/`bounds` not working on first display - [#1413](https://github.com/fleaflet/flutter_map/pull/1413)
+- Fixed error when zooming - [#1388](https://github.com/fleaflet/flutter_map/pull/1388)
+
+Many thanks to these contributors (in no particular order):
+
+- @JosefWN
+- @Robbendebiene
+- @urusai88
+- @LeonTenorio
+- ... and all the maintainers
+
+## [3.0.0] - 2022/09/04
+
+Contains the following additions/removals:
+
+- Multiple changes - [#1333](https://github.com/fleaflet/flutter_map/pull/1333)
+  - Removed deprecated APIs from v2
+  - Removed old layering system
+  - Added new layering system
+  - Removed old plugin registration system
+- Added `Polygon` label rotation (countered to the map rotation) - [#1332](https://github.com/fleaflet/flutter_map/pull/1332)
+
+Contains the following bug fixes:
+
+- Fixed missing widget sizing to fix multiple issues - [#1334](https://github.com/fleaflet/flutter_map/pull/1334)
+- Forced CRS changes to rebuild children - [#1322](https://github.com/fleaflet/flutter_map/issues/1322)
+- Allowed map to absorb gesture events correctly within other scrollables - [#1308](https://github.com/fleaflet/flutter_map/issues/1308)
+- Improved performance by harnessing the full power of Flutter widgets - [#1165](https://github.com/fleaflet/flutter_map/issues/1165), [#958](https://github.com/fleaflet/flutter_map/issues/958)
+
+In other news:
+
+- @MooNag & @TesteurManiak have joined the maintainer team!
+
+Many thanks to these contributors (in no particular order):
+
+- @MooNag
+- @jetpeter
+- @Firefishy
+- ... and all the maintainers
+
+## [2.2.0] - 2022/08/02
+
+Contains the following additions/removals:
+
+- Added `RotatedOverlayImage` which supports image rotation and skewing by specifying a 3rd point - [#1315](https://github.com/fleaflet/flutter_map/pull/1315)
+- Added `latLngToScreenPoint` and refactored `pointToLatLng` - [#1330](https://github.com/fleaflet/flutter_map/pull/1330)
+
+Contains the following bug fixes:
+
+- Removed a particularly illusive null-safety bug - [#1323](https://github.com/fleaflet/flutter_map/pull/1323)
+
+In other news:
+
+- Internal lints have been improved - [#1319](https://github.com/fleaflet/flutter_map/pull/1319)
+- GitHub Actions have been improved - [#1323](https://github.com/fleaflet/flutter_map/pull/1323)
+
+Many thanks to these contributors (in no particular order):
+
+- @Robbendebiene
+- @lsaudon
+- ... and all the maintainers
+
 ## [2.1.1] - 2022/07/25
 
 Contains the following additions/removals:
@@ -16,7 +116,7 @@ In other news:
 
 Many thanks to these contributors (in no particular order):
 
-- sergioisair (tested changed)
+- sergioisair (tested changes over on Discord)
 - ... and all the maintainers
 
 ## [2.1.0] - 2022/07/22

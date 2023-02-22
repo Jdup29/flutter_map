@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:http/retry.dart';
+import 'package:http/http.dart' as http;
 
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map/src/layer/tile_layer/tile_provider/network_image_provider.dart';
@@ -18,17 +18,16 @@ class NetworkTileProvider extends TileProvider {
     this.headers = headers ?? {};
   }
 
-  late final RetryClient retryClient;
-
   @override
-  ImageProvider getImage(Coords<num> coords, TileLayerOptions options) =>
+  ImageProvider getImage(Coords<num> coords, TileLayer options) =>
       FMNetworkImageProvider(
         getTileUrl(coords, options),
+        fallbackUrl: getTileFallbackUrl(coords, options),
         headers: headers..remove('User-Agent'),
       );
 }
 
-/// [TileProvider] that uses [NetworkImage] internally
+/// [TileProvider] that uses [FMNetworkImageProvider] internally with no retry.
 ///
 /// This image provider does not automatically retry any failed requests. This provider is the default and the recommended provider, unless your tile server is especially unreliable.
 ///
@@ -41,54 +40,30 @@ class NetworkNoRetryTileProvider extends TileProvider {
   }
 
   @override
-  ImageProvider getImage(Coords<num> coords, TileLayerOptions options) =>
-      NetworkImage(
+  ImageProvider getImage(Coords<num> coords, TileLayer options) =>
+      FMNetworkImageProvider(
         getTileUrl(coords, options),
+        fallbackUrl: getTileFallbackUrl(coords, options),
         headers: headers..remove('User-Agent'),
+        httpClient: http.Client(),
       );
-}
-
-/// Deprecated due to internal refactoring. The name is misleading, as the internal [ImageProvider] always caches, and this is recommended by most tile servers anyway. For the same functionality, migrate to [NetworkNoRetryTileProvider] before the next minor update.
-@Deprecated(
-    '`NonCachingNetworkTileProvider` has been deprecated due to internal refactoring. The name is misleading, as the internal `ImageProvider` always caches, and this is recommended by most tile servers anyway. For the same functionality, migrate to `NetworkNoRetryTileProvider` before the next minor update.')
-class NonCachingNetworkTileProvider extends TileProvider {
-  NonCachingNetworkTileProvider({
-    Map<String, String>? headers,
-  }) {
-    this.headers = headers ?? {};
-  }
-
-  @override
-  ImageProvider getImage(Coords<num> coords, TileLayerOptions options) =>
-      NetworkNoRetryTileProvider(
-        headers: headers,
-      ).getImage(coords, options);
-}
-
-class AssetTileProvider extends TileProvider {
-  AssetTileProvider();
-
-  @override
-  ImageProvider getImage(Coords<num> coords, TileLayerOptions options) {
-    return AssetImage(getTileUrl(coords, options));
-  }
 }
 
 /// A very basic [TileProvider] implementation, that can be extended to create your own provider
 ///
 /// Using this method is not recommended any more, except for very simple custom [TileProvider]s. Instead, visit the online documentation at https://docs.fleaflet.dev/plugins/making-a-plugin/creating-new-tile-providers.
 class CustomTileProvider extends TileProvider {
-  final String Function(Coords coors, TileLayerOptions options) customTileUrl;
+  final String Function(Coords coors, TileLayer options) customTileUrl;
 
   CustomTileProvider({required this.customTileUrl});
 
   @override
-  String getTileUrl(Coords coords, TileLayerOptions options) {
+  String getTileUrl(Coords coords, TileLayer options) {
     return customTileUrl(coords, options);
   }
 
   @override
-  ImageProvider getImage(Coords<num> coords, TileLayerOptions options) {
+  ImageProvider getImage(Coords<num> coords, TileLayer options) {
     return AssetImage(getTileUrl(coords, options));
   }
 }

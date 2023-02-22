@@ -2,10 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map_example/widgets/drawer.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:location/location.dart';
-
-import '../widgets/drawer.dart';
 
 class MapControllerPage extends StatefulWidget {
   static const String route = 'map_controller';
@@ -18,26 +17,26 @@ class MapControllerPage extends StatefulWidget {
   }
 }
 
-class MapControllerPageState extends State<MapControllerPage> {
-  static LatLng london = LatLng(51.5, -0.09);
-  static LatLng paris = LatLng(48.8566, 2.3522);
-  static LatLng dublin = LatLng(53.3498, -6.2603);
+final LatLng london = LatLng(51.5, -0.09);
+final LatLng paris = LatLng(48.8566, 2.3522);
+final LatLng dublin = LatLng(53.3498, -6.2603);
 
-  late final MapController mapController;
-  double rotation = 0.0;
+class MapControllerPageState extends State<MapControllerPage> {
+  late final MapController _mapController;
+  double _rotation = 0;
 
   @override
   void initState() {
     super.initState();
-    mapController = MapController();
+    _mapController = MapController();
   }
 
   @override
   Widget build(BuildContext context) {
-    var markers = <Marker>[
+    final markers = <Marker>[
       Marker(
-        width: 80.0,
-        height: 80.0,
+        width: 80,
+        height: 80,
         point: london,
         builder: (ctx) => Container(
           key: const Key('blue'),
@@ -45,8 +44,8 @@ class MapControllerPageState extends State<MapControllerPage> {
         ),
       ),
       Marker(
-        width: 80.0,
-        height: 80.0,
+        width: 80,
+        height: 80,
         point: dublin,
         builder: (ctx) => const FlutterLogo(
           key: Key('green'),
@@ -54,8 +53,8 @@ class MapControllerPageState extends State<MapControllerPage> {
         ),
       ),
       Marker(
-        width: 80.0,
-        height: 80.0,
+        width: 80,
+        height: 80,
         point: paris,
         builder: (ctx) => Container(
           key: const Key('purple'),
@@ -68,49 +67,51 @@ class MapControllerPageState extends State<MapControllerPage> {
       appBar: AppBar(title: const Text('MapController')),
       drawer: buildDrawer(context, MapControllerPage.route),
       body: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(8),
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
+              padding: const EdgeInsets.only(top: 8, bottom: 8),
               child: Row(
                 children: <Widget>[
                   MaterialButton(
                     onPressed: () {
-                      mapController.move(london, 18.0);
+                      _mapController.move(london, 18);
                     },
                     child: const Text('London'),
                   ),
                   MaterialButton(
                     onPressed: () {
-                      mapController.move(paris, 5.0);
+                      _mapController.move(paris, 5);
                     },
                     child: const Text('Paris'),
                   ),
                   MaterialButton(
                     onPressed: () {
-                      mapController.move(dublin, 5.0);
+                      _mapController.move(dublin, 5);
                     },
                     child: const Text('Dublin'),
                   ),
-                  CurrentLocation(mapController: mapController),
+                  CurrentLocation(mapController: _mapController),
                 ],
               ),
             ),
             Padding(
-              padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
+              padding: const EdgeInsets.only(top: 8, bottom: 8),
               child: Row(
                 children: <Widget>[
                   MaterialButton(
                     onPressed: () {
-                      var bounds = LatLngBounds();
-                      bounds.extend(dublin);
-                      bounds.extend(paris);
-                      bounds.extend(london);
-                      mapController.fitBounds(
+                      final bounds = LatLngBounds.fromPoints([
+                        dublin,
+                        paris,
+                        london,
+                      ]);
+
+                      _mapController.fitBounds(
                         bounds,
                         options: const FitBoundsOptions(
-                          padding: EdgeInsets.only(left: 15.0, right: 15.0),
+                          padding: EdgeInsets.only(left: 15, right: 15),
                         ),
                       );
                     },
@@ -119,7 +120,7 @@ class MapControllerPageState extends State<MapControllerPage> {
                   Builder(builder: (BuildContext context) {
                     return MaterialButton(
                       onPressed: () {
-                        final bounds = mapController.bounds!;
+                        final bounds = _mapController.bounds!;
 
                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                           content: Text(
@@ -137,14 +138,14 @@ class MapControllerPageState extends State<MapControllerPage> {
                   const Text('Rotation:'),
                   Expanded(
                     child: Slider(
-                      value: rotation,
-                      min: 0.0,
+                      value: _rotation,
+                      min: 0,
                       max: 360,
                       onChanged: (degree) {
                         setState(() {
-                          rotation = degree;
+                          _rotation = degree;
                         });
-                        mapController.rotate(degree);
+                        _mapController.rotate(degree);
                       },
                     ),
                   )
@@ -153,21 +154,20 @@ class MapControllerPageState extends State<MapControllerPage> {
             ),
             Flexible(
               child: FlutterMap(
-                mapController: mapController,
+                mapController: _mapController,
                 options: MapOptions(
                   center: LatLng(51.5, -0.09),
-                  zoom: 5.0,
-                  maxZoom: 5.0,
-                  minZoom: 3.0,
+                  zoom: 5,
+                  maxZoom: 5,
+                  minZoom: 3,
                 ),
-                layers: [
-                  TileLayerOptions(
+                children: [
+                  TileLayer(
                     urlTemplate:
-                        'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                    subdomains: ['a', 'b', 'c'],
+                        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                     userAgentPackageName: 'dev.fleaflet.flutter_map.example',
                   ),
-                  MarkerLayerOptions(markers: markers)
+                  MarkerLayer(markers: markers),
                 ],
               ),
             ),
@@ -193,13 +193,12 @@ class CurrentLocation extends StatefulWidget {
 class _CurrentLocationState extends State<CurrentLocation> {
   int _eventKey = 0;
 
-  var icon = Icons.gps_not_fixed;
+  IconData icon = Icons.gps_not_fixed;
   late final StreamSubscription<MapEvent> mapEventSubscription;
 
   @override
   void initState() {
     super.initState();
-
     mapEventSubscription =
         widget.mapController.mapEventStream.listen(onMapEvent);
   }
@@ -219,28 +218,24 @@ class _CurrentLocationState extends State<CurrentLocation> {
   }
 
   void onMapEvent(MapEvent mapEvent) {
-    if (mapEvent is MapEventMove && mapEvent.id == _eventKey.toString()) {
+    if (mapEvent is MapEventMove && mapEvent.id != _eventKey.toString()) {
       setIcon(Icons.gps_not_fixed);
     }
   }
 
   void _moveToCurrent() async {
     _eventKey++;
-    var location = Location();
+    final location = Location();
 
     try {
-      var currentLocation = await location.getLocation();
-      var moved = widget.mapController.move(
+      final currentLocation = await location.getLocation();
+      final moved = widget.mapController.move(
         LatLng(currentLocation.latitude!, currentLocation.longitude!),
         18,
         id: _eventKey.toString(),
       );
 
-      if (moved) {
-        setIcon(Icons.gps_fixed);
-      } else {
-        setIcon(Icons.gps_not_fixed);
-      }
+      setIcon(moved ? Icons.gps_fixed : Icons.gps_not_fixed);
     } catch (e) {
       setIcon(Icons.gps_off);
     }

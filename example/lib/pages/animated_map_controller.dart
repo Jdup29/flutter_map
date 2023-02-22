@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map_example/widgets/drawer.dart';
 import 'package:latlong2/latlong.dart';
-
-import '../widgets/drawer.dart';
 
 class AnimatedMapControllerPage extends StatefulWidget {
   static const String route = 'map_controller_animated';
@@ -27,9 +26,9 @@ class AnimatedMapControllerPageState extends State<AnimatedMapControllerPage>
   // See https://github.com/flutter/flutter/issues/14317#issuecomment-361085869
   // This project didn't require that change, so YMMV.
 
-  static LatLng london = LatLng(51.5, -0.09);
-  static LatLng paris = LatLng(48.8566, 2.3522);
-  static LatLng dublin = LatLng(53.3498, -6.2603);
+  static final london = LatLng(51.5, -0.09);
+  static final paris = LatLng(48.8566, 2.3522);
+  static final dublin = LatLng(53.3498, -6.2603);
 
   late final MapController mapController;
 
@@ -49,11 +48,11 @@ class AnimatedMapControllerPageState extends State<AnimatedMapControllerPage>
     final zoomTween = Tween<double>(begin: mapController.zoom, end: destZoom);
 
     // Create a animation controller that has a duration and a TickerProvider.
-    var controller = AnimationController(
+    final controller = AnimationController(
         duration: const Duration(milliseconds: 500), vsync: this);
     // The animation determines what path the animation will take. You can try different Curves values, although I found
     // fastOutSlowIn to be my favorite.
-    Animation<double> animation =
+    final Animation<double> animation =
         CurvedAnimation(parent: controller, curve: Curves.fastOutSlowIn);
 
     controller.addListener(() {
@@ -75,10 +74,10 @@ class AnimatedMapControllerPageState extends State<AnimatedMapControllerPage>
 
   @override
   Widget build(BuildContext context) {
-    var markers = <Marker>[
+    final markers = <Marker>[
       Marker(
-        width: 80.0,
-        height: 80.0,
+        width: 80,
+        height: 80,
         point: london,
         builder: (ctx) => Container(
           key: const Key('blue'),
@@ -86,8 +85,8 @@ class AnimatedMapControllerPageState extends State<AnimatedMapControllerPage>
         ),
       ),
       Marker(
-        width: 80.0,
-        height: 80.0,
+        width: 80,
+        height: 80,
         point: dublin,
         builder: (ctx) => const FlutterLogo(
           key: Key('green'),
@@ -95,8 +94,8 @@ class AnimatedMapControllerPageState extends State<AnimatedMapControllerPage>
         ),
       ),
       Marker(
-        width: 80.0,
-        height: 80.0,
+        width: 80,
+        height: 80,
         point: paris,
         builder: (ctx) => Container(
           key: const Key('purple'),
@@ -109,28 +108,28 @@ class AnimatedMapControllerPageState extends State<AnimatedMapControllerPage>
       appBar: AppBar(title: const Text('Animated MapController')),
       drawer: buildDrawer(context, AnimatedMapControllerPage.route),
       body: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(8),
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
+              padding: const EdgeInsets.only(top: 8, bottom: 8),
               child: Row(
                 children: <Widget>[
                   MaterialButton(
                     onPressed: () {
-                      _animatedMapMove(london, 10.0);
+                      _animatedMapMove(london, 10);
                     },
                     child: const Text('London'),
                   ),
                   MaterialButton(
                     onPressed: () {
-                      _animatedMapMove(paris, 5.0);
+                      _animatedMapMove(paris, 5);
                     },
                     child: const Text('Paris'),
                   ),
                   MaterialButton(
                     onPressed: () {
-                      _animatedMapMove(dublin, 5.0);
+                      _animatedMapMove(dublin, 5);
                     },
                     child: const Text('Dublin'),
                   ),
@@ -138,19 +137,21 @@ class AnimatedMapControllerPageState extends State<AnimatedMapControllerPage>
               ),
             ),
             Padding(
-              padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
+              padding: const EdgeInsets.only(top: 8, bottom: 8),
               child: Row(
                 children: <Widget>[
                   MaterialButton(
                     onPressed: () {
-                      var bounds = LatLngBounds();
-                      bounds.extend(dublin);
-                      bounds.extend(paris);
-                      bounds.extend(london);
+                      final bounds = LatLngBounds.fromPoints([
+                        dublin,
+                        paris,
+                        london,
+                      ]);
+
                       mapController.fitBounds(
                         bounds,
                         options: const FitBoundsOptions(
-                          padding: EdgeInsets.only(left: 15.0, right: 15.0),
+                          padding: EdgeInsets.only(left: 15, right: 15),
                         ),
                       );
                     },
@@ -158,12 +159,13 @@ class AnimatedMapControllerPageState extends State<AnimatedMapControllerPage>
                   ),
                   MaterialButton(
                     onPressed: () {
-                      var bounds = LatLngBounds();
-                      bounds.extend(dublin);
-                      bounds.extend(paris);
-                      bounds.extend(london);
+                      final bounds = LatLngBounds.fromPoints([
+                        dublin,
+                        paris,
+                        london,
+                      ]);
 
-                      var centerZoom =
+                      final centerZoom =
                           mapController.centerZoomFitBounds(bounds);
                       _animatedMapMove(centerZoom.center, centerZoom.zoom);
                     },
@@ -177,17 +179,16 @@ class AnimatedMapControllerPageState extends State<AnimatedMapControllerPage>
                 mapController: mapController,
                 options: MapOptions(
                     center: LatLng(51.5, -0.09),
-                    zoom: 5.0,
-                    maxZoom: 10.0,
-                    minZoom: 3.0),
-                layers: [
-                  TileLayerOptions(
+                    zoom: 5,
+                    maxZoom: 10,
+                    minZoom: 3),
+                children: [
+                  TileLayer(
                     urlTemplate:
-                        'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                    subdomains: ['a', 'b', 'c'],
+                        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                     userAgentPackageName: 'dev.fleaflet.flutter_map.example',
                   ),
-                  MarkerLayerOptions(markers: markers)
+                  MarkerLayer(markers: markers),
                 ],
               ),
             ),
